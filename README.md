@@ -1,3 +1,32 @@
+<h1 align="center">NEWDROM</h1>
+
+<p align="center"><em>Transforming Ideas into Limitless Possibilities</em></p>
+
+<p align="center">
+  <img alt="Last Commit" src="https://img.shields.io/badge/last%20commit-today-brightgreen?style=flat-square">
+  <img alt="TypeScript" src="https://img.shields.io/badge/typescript-99.1%25-blue?style=flat-square">
+  <img alt="Languages" src="https://img.shields.io/badge/languages-4-blue?style=flat-square">
+</p>
+
+<p align="center"><em>Built with the tools and technologies:</em></p>
+
+<p align="center">
+  <img alt="JSON" src="https://img.shields.io/badge/-JSON-black?style=flat-square&logo=json">
+  <img alt="Markdown" src="https://img.shields.io/badge/-Markdown-white?style=flat-square&logo=markdown">
+  <img alt="npm" src="https://img.shields.io/badge/-npm-red?style=flat-square&logo=npm">
+  <img alt="Autoprefixer" src="https://img.shields.io/badge/-Autoprefixer-EA5C45?style=flat-square&logo=autoprefixer">
+  <img alt="PostCSS" src="https://img.shields.io/badge/-PostCSS-DD3A0A?style=flat-square&logo=postcss">
+  <img alt="TOML" src="https://img.shields.io/badge/-TOML-white?style=flat-square&logo=toml">
+  <img alt="JavaScript" src="https://img.shields.io/badge/-JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black">
+  <img alt="React" src="https://img.shields.io/badge/-React-61DAFB?style=flat-square&logo=react&logoColor=black">
+  <img alt="TypeScript" src="https://img.shields.io/badge/-TypeScript-3178C6?style=flat-square&logo=typescript">
+  <img alt="Zod" src="https://img.shields.io/badge/-Zod-4F46E5?style=flat-square">
+  <img alt="Vite" src="https://img.shields.io/badge/-Vite-646CFF?style=flat-square&logo=vite&logoColor=white">
+  <img alt="ESLint" src="https://img.shields.io/badge/-ESLint-4B32C3?style=flat-square&logo=eslint">
+  <img alt="date-fns" src="https://img.shields.io/badge/-date-fns-pink?style=flat-square">
+  <img alt="React Hook Form" src="https://img.shields.io/badge/-React%20Hook%20Form-EC5990?style=flat-square&logo=reacthookform&logoColor=white">
+</p>
+
 Main Project Ban Phuttachad Dormitory, Nakhon Pathom
 If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
 
