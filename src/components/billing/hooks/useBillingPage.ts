@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -17,6 +16,7 @@ interface BillingRecord {
   due_date: string;
   paid_date: string | null;
   created_at: string;
+  receipt_number: string;
   rooms: {
     room_number: string;
   };
@@ -30,67 +30,61 @@ export const useBillingPage = () => {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [selectedMonth, setSelectedMonth] = useState(() => new Date());
   const [billings, setBillings] = useState<BillingRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCalculationDialog, setShowCalculationDialog] = useState(false);
 
-  useEffect(() => {
-    fetchBillings();
-  }, []);
-
-  const fetchBillings = async () => {
+  const fetchBillings = useCallback(async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+
+      // 1. ดึงข้อมูล billing ทั้งหมด
+      const { data: billingData, error: billingError } = await supabase
         .from('billing')
-        .select(`
-          id,
-          billing_month,
-          tenant_id,
-          room_rent,
-          water_units,
-          water_cost,
-          electricity_units,
-          electricity_cost,
-          total_amount,
-          status,
-          due_date,
-          paid_date,
-          created_at,
-          rooms (
-            room_number
-          ),
-          tenants (
-            first_name,
-            last_name
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
+      if (billingError) throw billingError;
 
-      if (error) {
-        console.error('Error fetching billings:', error);
-        toast({
-          title: "Error",
-          description: "Failed to fetch billing records",
-          variant: "destructive",
-        });
-        return;
-      }
+      // 2. ดึงข้อมูล rooms
+      const { data: roomsData, error: roomsError } = await supabase
+        .from('rooms')
+        .select('id, room_number');
+      if (roomsError) throw roomsError;
 
-      setBillings(data || []);
+      // 3. ดึงข้อมูล tenants
+      const { data: tenantsData, error: tenantsError } = await supabase
+        .from('tenants')
+        .select('id, first_name, last_name');
+      if (tenantsError) throw tenantsError;
+
+      // 4. ประกบข้อมูลเข้ากับ billing
+      const result = (billingData || []).map(bill => ({
+        ...bill,
+        rooms: roomsData?.find(r => String(r.id) === String(bill.room_id)) || { room_number: '-' },
+        tenants: tenantsData?.find(t => String(t.id) === String(bill.tenant_id)) || { first_name: '-', last_name: '-' }
+      }));
+
+      setBillings(result);
     } catch (err) {
       console.error('Error in fetchBillings:', err);
       toast({
         title: "Error",
-        description: "An unexpected error occurred",
+        description: "Failed to fetch billing records",
         variant: "destructive",
       });
+      setBillings([]); // กันไว้ไม่ให้เป็น undefined
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    fetchBillings();
+  }, [fetchBillings]);
 
   const filteredBillings = billings.filter(billing => {
+    const billingDate = new Date(billing.billing_month);
     const matchesSearch = 
       billing.tenants.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       billing.tenants.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -98,7 +92,11 @@ export const useBillingPage = () => {
     
     const matchesStatus = statusFilter === "all" || billing.status === statusFilter;
     
-    return matchesSearch && matchesStatus;
+    const matchesMonth = 
+      billingDate.getMonth() === selectedMonth.getMonth() && 
+      billingDate.getFullYear() === selectedMonth.getFullYear();
+    
+    return matchesSearch && matchesStatus && matchesMonth;
   });
 
   const handleMarkAsPaid = async (billingId: string) => {
@@ -142,12 +140,14 @@ export const useBillingPage = () => {
     setSearchTerm,
     statusFilter,
     setStatusFilter,
+    selectedMonth,
+    setSelectedMonth,
     billings,
     filteredBillings,
     loading,
     showCalculationDialog,
     setShowCalculationDialog,
     fetchBillings,
-    handleMarkAsPaid
+    handleMarkAsPaid,
   };
 };

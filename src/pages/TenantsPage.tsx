@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLanguage } from "@/providers/LanguageProvider";
 import { 
   Table, 
@@ -119,7 +118,7 @@ const TenantsPage = ({ children }: UserManagementDialogProps) => {
     }
   };
 
-  const handleFormSubmit = (data: any) => {
+  const handleFormSubmit = (data: Database['public']['Tables']['tenants']['Insert']) => {
     if (editingTenant) {
       updateTenant({ id: editingTenant.id, updates: data });
     } else {

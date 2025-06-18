@@ -1,4 +1,3 @@
-
 import {
   Dialog,
   DialogContent,
@@ -9,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Mail, Phone, MapPin, AlertCircle, Home, Building } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
+import { Input } from "@/components/ui/input";
 
 type Tenant = Database['public']['Tables']['tenants']['Row'] & {
   current_room?: {
@@ -23,12 +23,14 @@ interface TenantDetailsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   tenant: Tenant | null;
+  oldValue?: Tenant;
 }
 
 export default function TenantDetailsDialog({
   open,
   onOpenChange,
   tenant,
+  oldValue,
 }: TenantDetailsDialogProps) {
   if (!tenant) return null;
 

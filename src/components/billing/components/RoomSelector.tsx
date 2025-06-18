@@ -35,7 +35,14 @@ export default function RoomSelector({
   return (
     <div className="space-y-2">
       <Label htmlFor="room">เลือกห้อง</Label>
-      <Select value={selectedRoom} onValueChange={onRoomChange}>
+     <Select
+  value={selectedRoom}
+  onValueChange={(value) => {
+    console.log("เลือกห้อง:", value);
+    onRoomChange(value);
+  }}
+>
+
         <SelectTrigger>
           <SelectValue placeholder="เลือกห้อง" />
         </SelectTrigger>

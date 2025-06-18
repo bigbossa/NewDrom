@@ -53,7 +53,7 @@ export default function BillingCalculationDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[600px] md:max-w-[700px] lg:max-w-[800px]">
-        <DialogHeader className="sticky top-0 bg-background z-10 pb-4 border-b">
+        <DialogHeader className="sticky top-0 bg-background z-999 pb-4 border-b">
           <DialogTitle>
             คำนวณค่าใช้จ่าย (ตามห้อง)
           </DialogTitle>

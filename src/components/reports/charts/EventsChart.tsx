@@ -47,8 +47,7 @@ export const EventsChart = () => {
         <CardHeader>
           <CardTitle>Event Attendance</CardTitle>
           <CardDescription>Monthly event participation and attendance rates</CardDescription>
-        </CardHeader>
-        <CardContent className="h-[400px] flex items-center justify-center">
+        </CardHeader>        <CardContent className="h-[500px] flex items-center justify-center">
           <div className="text-muted-foreground">Loading...</div>
         </CardContent>
       </Card>
@@ -61,7 +60,7 @@ export const EventsChart = () => {
         <CardTitle>Event Attendance</CardTitle>
         <CardDescription>Monthly event participation and attendance rates</CardDescription>
       </CardHeader>
-      <CardContent className="h-[400px]">
+      <CardContent className="h-[500px]">
         <ChartContainer
           config={{
             events: {

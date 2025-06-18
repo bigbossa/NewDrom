@@ -1,214 +1,161 @@
-import { useState } from "react"
+import { useForm } from "react-hook-form";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+} from "@/components/ui/dialog";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { useToast } from "@/components/ui/use-toast"
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import type { Database } from "@/integrations/supabase/types";
+import { log } from "console";
 
-// ส่วนของ Type definitions สำหรับข้อมูลพนักงาน
-type StaffFormData = {
-  first_name: string    // ชื่อพนักงาน
-  last_name: string     // นามสกุลพนักงาน  
-  email: string         // อีเมล
-  phone: string         // เบอร์โทรศัพท์
-  department: string    // แผนก
-  role: string         // ตำแหน่ง
-  status: 'active' | 'inactive' // สถานะการทำงาน
+type Staff = Database['public']['Tables']['staffs']['Row'];
+type StaffInsert = Database['public']['Tables']['staffs']['Insert'];
+
+interface StaffFormDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  staff?: Staff | null;
+  onSubmit: (data: StaffInsert) => void;
+  isLoading?: boolean;
 }
 
-// Props ที่ส่งเข้ามาในคอมโพเนนต์
-type StaffFormDialogProps = {
-  open: boolean        // สถานะการแสดง/ซ่อน dialog
-  onOpenChange: (open: boolean) => void  // handler เมื่อมีการเปลี่ยนสถานะ dialog
-  onSubmit: (data: StaffFormData) => void // handler เมื่อกดบันทึกข้อมูล
-  initialData?: StaffFormData  // ข้อมูลเริ่มต้น (กรณีแก้ไข)
-}
-
-export function StaffFormDialog({ 
-  open, 
-  onOpenChange, 
-  onSubmit, 
-  initialData 
+export default function StaffFormDialog({
+  open,
+  onOpenChange,
+  staff,
+  onSubmit,
+  isLoading = false,
 }: StaffFormDialogProps) {
-  const { toast } = useToast() // hook สำหรับแสดง notifications
-  
-  // state เก็บข้อมูลฟอร์ม โดยถ้ามี initialData ให้ใช้ค่านั้น ถ้าไม่มีใช้ค่าว่าง
-  const [formData, setFormData] = useState<StaffFormData>(
-    initialData || {
-      first_name: "",
-      last_name: "", 
-      email: "",
-      phone: "",
-      department: "",
-      role: "",
-      status: "active"
-    }
-  )
+  const form = useForm<StaffInsert>({
+    defaultValues: {
+      first_name: staff?.first_name || "",
+      last_name: staff?.last_name || "",
+      email: staff?.email || "",
+      phone: staff?.phone || "",
+      address: staff?.address || "",
+      emergency_contact: staff?.emergency_contact || "",
+    },
+  });
 
-  // handler เมื่อกด submit form
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    // ตรวจสอบข้อมูลที่จำเป็นต้องกรอก
-    if (!formData.first_name || !formData.last_name || !formData.department || !formData.role) {
-      toast({
-        title: "Error",
-        description: "Please fill in all required fields",
-        variant: "destructive",
-      })
-      return
-    }
-    onSubmit(formData) // ส่งข้อมูลกลับไปที่ parent component
-  }
+  const handleSubmit = (data: StaffInsert) => {
+    console.log('Form submitted:', data);
+    onSubmit(data);
+    form.reset();
+    onOpenChange(false);
+  };
+
+  console.log("StaffFormDialog rendered with staff:", staff);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>
-            {initialData ? "Edit Staff" : "Add New Staff"} {/* แสดงหัวข้อตามโหมดเพิ่ม/แก้ไข */}
+            {staff ? "แก้ไขข้อมูลพนักงาน" : "เพิ่มพนักงานใหม่"}
           </DialogTitle>
         </DialogHeader>
         
-        {/* ส่วนของฟอร์ม */}
-        <form onSubmit={handleSubmit}>
-          <div className="grid gap-4 py-4">
-            {/* ช่องกรอกชื่อ */}
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="first_name" className="text-right">
-                First Name*
-              </Label>
-              <Input
-                id="first_name"
-                value={formData.first_name}
-                onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
-                className="col-span-3"
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="first_name"
+                rules={{ required: "กรุณากรอกชื่อ" }}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>ชื่อ</FormLabel>
+                    <FormControl>
+                      <Input placeholder="ชื่อ" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="last_name"
+                rules={{ required: "กรุณากรอกนามสกุล" }}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>นามสกุล</FormLabel>
+                    <FormControl>
+                      <Input placeholder="นามสกุล" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
             </div>
+            
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>อีเมล</FormLabel>
+                  <FormControl>
+                    <Input type="email" placeholder="อีเมล" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>เบอร์โทร</FormLabel>
+                  <FormControl>
+                    <Input placeholder="เบอร์โทร" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-            {/* ช่องกรอกนามสกุล */}
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="last_name" className="text-right">
-                Last Name*
-              </Label>
-              <Input
-                id="last_name"
-                value={formData.last_name}
-                onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
-                className="col-span-3"
-              />
-            </div>
-
-            {/* ช่องกรอกอีเมล */}
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="email" className="text-right">
-                Email
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="col-span-3"
-              />
-            </div>
-
-            {/* ช่องกรอกเบอร์โทรศัพท์ */}
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="phone" className="text-right">
-                Phone
-              </Label>
-              <Input
-                id="phone"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                className="col-span-3"
-              />
-            </div>
-
-            {/* เลือกแผนก */}
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="department" className="text-right">
-                Department*
-              </Label>
-              <Select
-                value={formData.department}
-                onValueChange={(value) => setFormData({ ...formData, department: value })}
+            <FormField
+              control={form.control}
+              name="address"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>ที่อยู่</FormLabel>
+                  <FormControl>
+                    <Input placeholder="ที่อยู่" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <div className="flex justify-end space-x-2 pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
               >
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Select department" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="maintenance">Maintenance</SelectItem>
-                  <SelectItem value="housekeeping">Housekeeping</SelectItem>
-                  <SelectItem value="security">Security</SelectItem>
-                  <SelectItem value="administration">Administration</SelectItem>
-                </SelectContent>
-              </Select>
+                ยกเลิก
+              </Button>
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? "กำลังบันทึก..." : staff ? "อัปเดต" : "เพิ่ม"}
+              </Button>
             </div>
-
-            {/* เลือกตำแหน่ง */}
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="role" className="text-right">
-                Role*
-              </Label>
-              <Select
-                value={formData.role}
-                onValueChange={(value) => setFormData({ ...formData, role: value })}
-              >
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Select role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="manager">Manager</SelectItem>
-                  <SelectItem value="supervisor">Supervisor</SelectItem>
-                  <SelectItem value="staff">Staff</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* เลือกสถานะ */}
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="status" className="text-right">
-                Status
-              </Label>
-              <Select
-                value={formData.status}
-                onValueChange={(value: 'active' | 'inactive') => 
-                  setFormData({ ...formData, status: value })}
-              >
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="inactive">Inactive</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* ปุ่มบันทึก */}
-          <DialogFooter>
-            <Button type="submit">
-              {initialData ? "Update" : "Add"} Staff
-            </Button>
-          </DialogFooter>
-        </form>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

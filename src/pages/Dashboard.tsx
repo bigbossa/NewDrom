@@ -1,4 +1,3 @@
-
 import { useLanguage } from "@/providers/LanguageProvider";
 import { useAuth } from "@/providers/AuthProvider";
 import { useSystemStats } from "@/hooks/useSystemStats";
@@ -9,11 +8,15 @@ import { OccupancyVisualization } from "@/components/dashboard/OccupancyVisualiz
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { useReportsData } from "@/components/reports/hooks/useReportsData"; // เพิ่มบรรทัดนี้
 
 export default function Dashboard() {
   const { t } = useLanguage();
   const { user } = useAuth();
   const { data: systemStats, isLoading: statsLoading } = useSystemStats();
+
+  // ใช้ useReportsData เพื่อดึงข้อมูลรายได้รายเดือน
+  const { revenueData, isLoading: revenueLoading } = useReportsData("revenue");
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("th-TH", {
@@ -23,15 +26,7 @@ export default function Dashboard() {
     }).format(value);
   };
 
-  // Sample monthly data for the chart
- const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
-const apiData = systemStats?.monthlyRevenueByMonthArray || [];
-const monthlyData = months.map(month => {
-  const found = apiData.find(item => item.month === month);
-  return { month, revenue: found ? found.revenue : 0 };
-});
-
-  if (statsLoading) {
+  if (statsLoading || revenueLoading) {
     return (
       <div className="animate-in fade-in duration-500">
         <div className="flex items-center justify-center h-64">
@@ -43,6 +38,18 @@ const monthlyData = months.map(month => {
       </div>
     );
   }
+
+  // เอาเฉพาะ 6 เดือนล่าสุด
+  const last6Revenue = revenueData.slice(-6);
+
+  // หาเดือนปัจจุบันและรายได้เดือนปัจจุบัน
+  const today = new Date();
+  // const currentMonthName = today.toLocaleDateString('th-TH', { month: 'long', year: 'numeric' });
+  // const currentMonthShort = today.toLocaleDateString('en-US', { month: 'short' });
+  // const currentMonthRevenue = revenueData.find(r => r.month === currentMonthShort)?.revenue || 0;
+
+  // รวมรายได้ทั้งหมดที่ผ่านมา
+  const totalRevenue = revenueData.reduce((sum, r) => sum + (r.revenue || 0), 0);
 
   return (
     <div className="animate-in fade-in duration-500">
@@ -76,6 +83,20 @@ const monthlyData = months.map(month => {
         )}
       </div>
 
+      {/* Total Revenue Card */}
+      <div className="mb-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span>รายได้ทั้งหมดที่ผ่านมา</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-primary">{formatCurrency(totalRevenue)}</div>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <RoomStatsCard
@@ -86,7 +107,7 @@ const monthlyData = months.map(month => {
         />
 
         <ServiceStatsCard
-          monthlyRevenue={systemStats?.monthlyRevenue || 0}
+          monthlyData={last6Revenue}
           pendingRepairs={systemStats?.pendingRepairs || 0}
           announcements={2}
           formatCurrency={formatCurrency}
@@ -97,7 +118,7 @@ const monthlyData = months.map(month => {
       {/* Revenue Chart */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mt-6">
         <RevenueChart 
-          monthlyData={monthlyData}
+          monthlyData={last6Revenue}
           formatCurrency={formatCurrency}
           t={t}
         />

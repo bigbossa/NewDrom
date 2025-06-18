@@ -36,8 +36,7 @@ export const PieCharts = ({ selectedReport }: PieChartsProps) => {
             {selectedReport === "rooms" ? "Room Type Distribution" : "Repair Request Analysis"}
           </CardTitle>
           <CardDescription>Loading data...</CardDescription>
-        </CardHeader>
-        <CardContent className="h-[400px] flex items-center justify-center">
+        </CardHeader>        <CardContent className="h-[500px] flex items-center justify-center">
           <div className="text-muted-foreground">Loading...</div>
         </CardContent>
       </Card>
@@ -50,8 +49,7 @@ export const PieCharts = ({ selectedReport }: PieChartsProps) => {
         <CardHeader>
           <CardTitle>Room Type Distribution</CardTitle>
           <CardDescription>Distribution of different room types in the dormitory</CardDescription>
-        </CardHeader>
-        <CardContent className="h-[400px]">
+        </CardHeader>        <CardContent className="h-[500px]">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
@@ -82,8 +80,7 @@ export const PieCharts = ({ selectedReport }: PieChartsProps) => {
         <CardHeader>
           <CardTitle>Repair Request Analysis</CardTitle>
           <CardDescription>Distribution of repair request statuses</CardDescription>
-        </CardHeader>
-        <CardContent className="h-[400px]">
+        </CardHeader>        <CardContent className="h-[500px]">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie

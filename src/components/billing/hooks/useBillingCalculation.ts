@@ -1,11 +1,10 @@
-
 import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 import { useRoomOccupancyData } from "./useRoomOccupancyData";
 import { useBillingFormState } from "./useBillingFormState";
 import { useBillingCalculationLogic } from "./useBillingCalculationLogic";
 import { createRoomBillingRecord } from "../utils/billingApi";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useBillingCalculation = (open: boolean, onBillingCreated: () => void, onOpenChange: (open: boolean) => void) => {
   const { toast } = useToast();
@@ -50,19 +49,9 @@ export const useBillingCalculation = (open: boolean, onBillingCreated: () => voi
   }, [selectedRoomData, setPreviousMeterReading]);
 
   const handleCreateBilling = async () => {
-    if (!selectedRoom || !billingMonth || !dueDate || !selectedRoomData) {
-      toast({
-        title: "Missing Information",
-        description: "Please fill in all required fields",
-        variant: "destructive",
-      });
-      return;
-    }
-
     try {
       setLoading(true);
-      
-      await createRoomBillingRecord({
+          const billingData = {
         selectedRoomData,
         billingMonth,
         roomRent,
@@ -73,7 +62,9 @@ export const useBillingCalculation = (open: boolean, onBillingCreated: () => voi
         totalAmount,
         dueDate,
         occupantCount
-      });
+      };
+
+      await createRoomBillingRecord(billingData);
 
       // Update latest meter reading for all occupants in the room
       const updatePromises = selectedRoomData.occupants.map(occupant => 

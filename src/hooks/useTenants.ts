@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/providers/AuthProvider";
 import type { Database } from "@/integrations/supabase/types";
 
+
 type Tenant = Database['public']['Tables']['tenants']['Row'] & {
     current_room?: {
     id: string;
@@ -31,7 +32,7 @@ type RoomUpdate = Database['public']['Tables']['rooms']['Update']& {
 export const useTenants = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const { user , session} = useAuth();
 
   const {
     data: tenants = [],
@@ -169,35 +170,85 @@ export const useTenants = () => {
     },
   });
 
-  const deleteTenantMutation = useMutation({
-    mutationFn: async (id: string) => {
-      // console.log('Deleting tenant:', id);
-      const { error } = await supabase
-        .from('tenants')
-        .delete()
-        .eq('id', id);
+      const deleteTenantMutation = useMutation({
+        mutationFn: async (tenantId: string) => {
+          // 1. หา user id จาก profiles
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('tenant_id', tenantId)
+            .single();
+         console.log('tenantId ที่จะส่งไปลบ:', tenantId);
+          if (profileError || !profile) {
+            throw new Error('ไม่พบ user id ที่ตรงกับ tenant นี้');
+          }
 
-      if (error) {
-        console.error('Error deleting tenant:', error);
-        throw error;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tenants'] });
-      toast({
-        title: "สำเร็จ",
-        description: "ลบผู้เช่าเรียบร้อยแล้ว",
+          const userId = profile.id;
+          console.log('userId ที่จะส่งไปลบ:', userId);
+
+
+          const { error: updateProfileError } = await supabase
+                .from('profiles')
+                .update({ tenant_id: null , staff_id: null, })
+                .eq('id', userId);
+          
+              if (updateProfileError) {
+                throw new Error('ไม่สามารถลบความสัมพันธ์กับ tenant ใน profiles ได้');
+              }
+
+          const { error: updateRoomError } = await supabase
+              .from('rooms')
+              .update({ tenant_id: null, status: 'vacant' })
+              .eq('tenant_id', tenantId);
+
+              if (updateRoomError) {
+                throw new Error('ไม่สามารถลบความสัมพันธ์กับ tenant ใน rooms ได้');
+              }
+
+          // 2. ลบ tenant ใน table
+          const { error } = await supabase
+            .from('tenants')
+            .delete()
+            .eq('id', tenantId);
+
+          if (error) {
+            throw error;
+          }
+
+          // 3. เรียก API ลบ user ใน Auth
+          const resp = await fetch(
+        "https://mnsotnlftoumjwjlvzus.functions.supabase.co/manage-auth-users",
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session?.access_token}`,
+            apikey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1uc290bmxmdG91bWp3amx2enVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwMTI4NTYsImV4cCI6MjA2MzU4ODg1Nn0.8r2EP-08imfAL2EFVIgfCHu5lMs2ILJYGds8vs5LC98",
+          },
+          body: JSON.stringify({ user_ids: [userId] }),
+        });
+
+            if (!resp.ok) {
+              const data = await resp.json()
+              throw new Error(data.error || 'Failed to delete user')
+            }
+        },
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: ['tenants'] });
+          toast({
+            title: "สำเร็จ",
+            description: "ลบผู้เช่าและบัญชีผู้ใช้เรียบร้อยแล้ว",
+          });
+        },
+        onError: (error) => {
+          console.error('Delete tenant error:', error);
+          toast({
+            title: "เกิดข้อผิดพลาด",
+            description: "ไม่สามารถลบผู้เช่าหรือบัญชีผู้ใช้ได้",
+            variant: "destructive",
+          });
+        },
       });
-    },
-    onError: (error) => {
-      console.error('Delete tenant error:', error);
-      toast({
-        title: "เกิดข้อผิดพลาด",
-        description: "ไม่สามารถลบผู้เช่าได้",
-        variant: "destructive",
-      });
-    },
-  });
 
  const assignRoomMutation = useMutation({
   mutationFn: async ({ tenantId, roomId }: { tenantId: string; roomId: string }) => {

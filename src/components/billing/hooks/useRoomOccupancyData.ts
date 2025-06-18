@@ -1,90 +1,67 @@
-
 import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
-interface RoomOccupancy {
-  room_id: string;
-  room_number: string;
-  room_price: number;
-  occupant_count: number;
-  latest_meter_reading: number;
-  occupants: Array<{
-    tenant_id: string;
-    tenant_name: string;
-    occupancy_id: string;
-  }>;
-}
-
 export const useRoomOccupancyData = (shouldFetch: boolean) => {
   const { toast } = useToast();
-  const [roomOccupancies, setRoomOccupancies] = useState<RoomOccupancy[]>([]);
+  const [roomOccupancies, setRoomOccupancies] = useState<any[]>([]);
 
   useEffect(() => {
     if (shouldFetch) {
       fetchRoomOccupancies();
     }
+    // eslint-disable-next-line
   }, [shouldFetch]);
 
   const fetchRoomOccupancies = async () => {
     try {
-      // Get all occupied rooms with their occupants
-      const { data: occupancyData, error } = await supabase
+      // 1. ดึง occupancy
+      const { data: occupancyData, error: occErr } = await supabase
         .from('occupancy')
-        .select(`
-          id,
-          room_id,
-          tenant_id,
-          latest_meter_reading,
-          rooms!occupancy_room_id_fkey (
-            room_number,
-            price
-          ),
-          tenants!occupancy_tenant_id_fkey (
-            first_name,
-            last_name
-          )
-        `)
+        .select('*')
         .eq('is_current', true);
 
-      if (error) {
-        console.error('Error fetching room occupancies:', error);
-        toast({
-          title: "Error",
-          description: "Failed to fetch room occupancies",
-          variant: "destructive",
-        });
-        return;
-      }
+      if (occErr) throw occErr;
 
-      // Group by room_id and aggregate data
-      const roomMap = new Map<string, RoomOccupancy>();
+      // 2. ดึง rooms
+      const { data: roomsData, error: roomErr } = await supabase
+        .from('rooms')
+        .select('id, room_number, price');
 
+      if (roomErr) throw roomErr;
+
+      // 3. ดึง tenants
+      const { data: tenantsData, error: tenErr } = await supabase
+        .from('tenants')
+        .select('id, first_name, last_name');
+
+      if (tenErr) throw tenErr;
+
+      // 4. รวมข้อมูล (group by room)
+      const roomMap = new Map<string, any>();
       (occupancyData || []).forEach(item => {
-        const roomId = item.room_id;
-        
-        if (!roomMap.has(roomId)) {
-          roomMap.set(roomId, {
-            room_id: roomId,
-            room_number: item.rooms?.room_number || 'N/A',
-            room_price: item.rooms?.price || 0,
+        const room = roomsData.find(r => r.id === item.room_id);
+        const tenant = tenantsData.find(t => t.id === item.tenant_id);
+
+        if (!roomMap.has(item.room_id)) {
+          roomMap.set(item.room_id, {
+            room_id: item.room_id,
+            room_number: room?.room_number || 'N/A',
+            room_price: room?.price || 0,
             occupant_count: 0,
             latest_meter_reading: item.latest_meter_reading || 0,
             occupants: []
           });
         }
-
-        const room = roomMap.get(roomId)!;
-        room.occupant_count += 1;
-        room.occupants.push({
+        const roomObj = roomMap.get(item.room_id);
+        roomObj.occupant_count += 1;
+        roomObj.occupants.push({
           tenant_id: item.tenant_id,
-          tenant_name: `${item.tenants?.first_name || ''} ${item.tenants?.last_name || ''}`.trim(),
+          tenant_name: `${tenant?.first_name || ''} ${tenant?.last_name || ''}`.trim(),
           occupancy_id: item.id
         });
-
-        // Use the latest meter reading from any occupant (they should all be the same for the room)
-        if (item.latest_meter_reading && item.latest_meter_reading > room.latest_meter_reading) {
-          room.latest_meter_reading = item.latest_meter_reading;
+        if (item.latest_meter_reading && item.latest_meter_reading > roomObj.latest_meter_reading) {
+          roomObj.latest_meter_reading = item.latest_meter_reading;
         }
       });
 
@@ -93,7 +70,7 @@ export const useRoomOccupancyData = (shouldFetch: boolean) => {
       console.error('Error in fetchRoomOccupancies:', err);
       toast({
         title: "Error",
-        description: "An unexpected error occurred",
+        description: "Failed to fetch room occupancies",
         variant: "destructive",
       });
     }

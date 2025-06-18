@@ -60,6 +60,7 @@ export type Database = {
           updated_at: string
           water_cost: number
           water_units: number
+          receipt_number: string
         }
         Insert: {
           billing_month: string
@@ -78,6 +79,7 @@ export type Database = {
           updated_at?: string
           water_cost?: number
           water_units?: number
+          receipt_number: string
         }
         Update: {
           billing_month?: string
@@ -96,6 +98,7 @@ export type Database = {
           updated_at?: string
           water_cost?: number
           water_units?: number
+          receipt_number?: string
         }
         Relationships: [
           {
@@ -308,6 +311,7 @@ export type Database = {
           id: string
           role: string
           tenant_id: string | null
+          staff_id: string | null
           updated_at: string
         }
         Insert: {
@@ -315,6 +319,7 @@ export type Database = {
           id: string
           role?: string
           tenant_id?: string | null
+          staff_id: string | null
           updated_at?: string
         }
         Update: {
@@ -322,6 +327,7 @@ export type Database = {
           id?: string
           role?: string
           tenant_id?: string | null
+          staff_id: string | null
           updated_at?: string
         }
         Relationships: [
@@ -395,7 +401,7 @@ export type Database = {
           room_number: string
           room_type: string
           status: string
-          tenants: string | null
+          tenant_id: string | null
           updated_at: string | null
         }
         Insert: {
@@ -407,7 +413,7 @@ export type Database = {
           room_number: string
           room_type: string
           status?: string
-          tenants?: string | null
+          tenant_id?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -419,7 +425,7 @@ export type Database = {
           room_number?: string
           room_type?: string
           status?: string
-          tenants?: string | null
+          tenant_id?: string | null
           updated_at?: string | null
         }
         Relationships: [
@@ -515,6 +521,51 @@ export type Database = {
           },
         ]
       }
+      staffs: {
+          Row: {
+            id: string
+            first_name: string
+            last_name: string
+            email: string
+            phone: string | null
+            address: string | null
+            department: string | null
+            role: string
+            status: 'active' | 'inactive'
+            emergency_contact: string | null
+            created_at: string | null
+            updated_at: string | null
+          }
+          Insert: {
+            id?: string
+            first_name: string
+            last_name: string
+            email: string
+            phone?: string | null
+            address?: string | null
+            department?: string | null
+            role?: string
+            status?: 'active' | 'inactive'
+            emergency_contact?: string | null
+            created_at?: string | null
+            updated_at?: string | null
+          }
+          Update: {
+            id?: string
+            first_name?: string
+            last_name?: string
+            email?: string
+            phone?: string | null
+            address?: string | null
+            department?: string | null
+            role?: string
+            status?: 'active' | 'inactive'
+            emergency_contact?: string | null
+            created_at?: string | null
+            updated_at?: string | null
+          }
+          Relationships: []
+        },
     }
     Views: {
       [_ in never]: never

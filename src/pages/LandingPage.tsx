@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useLanguage } from "@/providers/LanguageProvider";
-import { Building, CheckCircle2, MapPin, Lock, WifiIcon, BellRing, CalendarDays } from "lucide-react";
+import { Building, CheckCircle2, MapPin, Lock, WifiIcon, BellRing, CalendarDays, Users, Home, DoorOpen, ArrowUpCircle } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { supabase } from "@/integrations/supabase/client";
 import { format, parseISO } from "date-fns";
@@ -24,6 +25,12 @@ export default function LandingPage() {
   const [modalImage, setModalImage] = useState<string | null>(null);
   const [imageIndexes, setImageIndexes] = useState([0, 0, 0]);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [showBackToTop, setShowBackToTop] = useState(false);
+  const [stats, setStats] = useState({
+    totalRooms: 9,
+    availableRooms: 3,
+    totalTenants: 6
+  });
 
   const roomTypes = [
     {
@@ -74,6 +81,20 @@ export default function LandingPage() {
     fetchAnnouncements();
   }, []);
 
+  // Effect for Back to Top button
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowBackToTop(window.scrollY > 400);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const features = [
     {
       icon: WifiIcon,
@@ -103,6 +124,25 @@ export default function LandingPage() {
       description: "Close to universities and shopping centers",
       descriptionTh: "ใกล้มหาวิทยาลัยและห้างสรรพสินค้า",
     },
+  ];
+  const roomDetailsTitle = language === 'th' ? 'รายละเอียดห้องพัก' : 'Room Details';
+
+  const statsCards = [
+    {
+      title: language === 'th' ? 'ห้องทั้งหมด' : 'Total Rooms',
+      value: stats.totalRooms,
+      icon: Home
+    },
+    {
+      title: language === 'th' ? 'ห้องที่ว่าง' : 'Available Rooms',
+      value: stats.availableRooms,
+      icon: DoorOpen
+    },
+    {
+      title: language === 'th' ? 'ผู้เช่าทั้งหมด' : 'Total Tenants',
+      value: stats.totalTenants,
+      icon: Users
+    }
   ];
 
   return (
@@ -175,6 +215,27 @@ export default function LandingPage() {
                     : feature.descriptionTh}
                 </p>
               </div>
+            ))}
+          </div>
+        </div>
+      </div>      <div style={{ backgroundColor: '#fb8c00' }} className="py-16">
+        <div className="container mx-auto px-6">
+          <h2 className="text-3xl font-bold mb-6 text-center">{roomDetailsTitle}</h2>
+
+          {/* Stats Section */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            {statsCards.map((stat, index) => (
+              <Card key={index}>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    {stat.title}
+                  </CardTitle>
+                  {<stat.icon className="h-4 w-4 text-muted-foreground" />}
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stat.value}</div>
+                </CardContent>
+              </Card>
             ))}
           </div>
         </div>
@@ -255,7 +316,7 @@ export default function LandingPage() {
                 }}
               />
             </div>
-            
+
             {/* Announcements Section */}
             <div className="bg-card rounded-xl shadow-lg border border-border/50 p-4 sm:p-6
               transform transition-all duration-300 hover:scale-[1.02] hover:shadow-xl">
@@ -268,7 +329,7 @@ export default function LandingPage() {
               <div className="space-y-4 max-h-[500px] overflow-y-auto custom-scrollbar">
                 {announcements.length > 0 ? (
                   announcements.map((announcement) => (
-                    <div 
+                    <div
                       key={announcement.id}
                       className="p-4 bg-muted/50 rounded-lg border border-border/50
                         hover:bg-muted/70 transition-colors group"
@@ -306,6 +367,21 @@ export default function LandingPage() {
         </div>
       </div>
 
+      {/* Back to Top Button */}
+      {showBackToTop && (
+        <div
+          className="fixed bottom-4 right-4 z-50"
+          onClick={scrollToTop}
+        >
+          <Button className="rounded-full p-3 bg-primary text-primary-foreground shadow-md
+            transition-all duration-300 hover:scale-110 active:scale-95">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+          </Button>
+        </div>
+      )}
+
       {/* Footer */}
       <footer className="bg-background text-foreground border-t border-border py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -322,7 +398,7 @@ export default function LandingPage() {
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
                 />
-                
+
               </div>
             </div>
             <div>
@@ -345,8 +421,17 @@ export default function LandingPage() {
               &copy; {new Date().getFullYear()} {t("app.title")}. {t("footer.rights")}.
             </p>
           </div>
-        </div>
-      </footer>
+        </div>      </footer>      {/* Back to Top Button */}
+      {showBackToTop && (
+        <button
+          onClick={scrollToTop}
+          style={{ backgroundColor: '#FF6600' }}
+          className="fixed bottom-8 right-8 text-white p-3 rounded-full shadow-lg transition-transform duration-300 hover:scale-110 focus:outline-none z-50"
+          aria-label="Back to top"
+        >
+          <ArrowUpCircle className="h-6 w-6" />
+        </button>
+      )}
     </div>
   );
 }

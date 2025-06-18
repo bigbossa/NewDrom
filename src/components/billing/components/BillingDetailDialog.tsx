@@ -1,4 +1,3 @@
-
 import {
   Dialog,
   DialogContent,
@@ -10,6 +9,9 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import BillingStatusBadge from "../BillingStatusBadge";
+import { Button } from "@/components/ui/button";
+import { Printer } from "lucide-react";
+import React from "react";
 
 interface BillingRecord {
   id: string;
@@ -25,6 +27,7 @@ interface BillingRecord {
   due_date: string;
   paid_date: string | null;
   created_at: string;
+  receipt_number: string;
   rooms: {
     room_number: string;
   };
@@ -46,6 +49,14 @@ export default function BillingDetailDialog({
   billing 
 }: BillingDetailDialogProps) {
   if (!billing) return null;
+
+  const printRef = React.useRef<HTMLDivElement>(null);
+  const fullname = `${billing.tenants.first_name} ${billing.tenants.last_name}`;
+
+  const handlePrint = () => {
+    // TODO: Customize print style for receipt only
+    window.print();
+  };
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('th-TH', {
@@ -70,29 +81,39 @@ export default function BillingDetailDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
-            รายละเอียดบิล - {formatMonth(billing.billing_month)}
-            <BillingStatusBadge status={billing.status} />
-          </DialogTitle>
-          <DialogDescription>
-            บิลสำหรับห้อง {billing.rooms.room_number} - {billing.tenants.first_name} {billing.tenants.last_name}
-          </DialogDescription>
+          <div className="flex items-center justify-between w-full">
+            <div>
+              <DialogTitle className="flex items-center gap-2">
+                รายละเอียดบิล - {formatMonth(billing.billing_month)}
+                <BillingStatusBadge status={billing.status} />
+              </DialogTitle>
+              <DialogDescription className="space-y-1">
+                <div>เลขที่ใบเสร็จ: {billing.receipt_number || '-'}</div>
+                <div>บิลสำหรับห้อง {billing.rooms.room_number} - {fullname}</div>
+              </DialogDescription>
+            </div>
+            <Button variant="outline" size="sm" onClick={handlePrint} className="ml-4">
+              <Printer className="mr-2" size={16} />
+              ปริ้นใบเสร็จ
+            </Button>
+          </div>
         </DialogHeader>
-
-        <div className="space-y-6">
+        <div ref={printRef} className="space-y-6">
           {/* ข้อมูลผู้เช่าและห้อง */}
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">ข้อมูลผู้เช่า</CardTitle>
-            </CardHeader>
-            <CardContent className="grid grid-cols-2 gap-4">
+            </CardHeader>            <CardContent className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">ชื่อผู้เช่า</p>
-                <p className="text-base">{billing.tenants.first_name} {billing.tenants.last_name}</p>
+                <p className="text-sm font-medium text-muted-foreground">เลขที่ใบเสร็จ</p>
+                <p className="text-base">{billing.receipt_number || '-'}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">หมายเลขห้อง</p>
                 <p className="text-base">{billing.rooms.room_number}</p>
+              </div>              <div>
+                <p className="text-sm font-medium text-muted-foreground">ชื่อผู้เช่า</p>
+                <p className="text-base">{fullname}</p>
               </div>
             </CardContent>
           </Card>

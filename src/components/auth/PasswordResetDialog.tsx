@@ -19,7 +19,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { supabase } from "@/integrations/supabase/client";
+import { supersupabase } from "@/integrations/supabase/clients";
 import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
 
@@ -58,7 +58,7 @@ export const PasswordResetDialog = ({ open, onOpenChange, userEmail }: PasswordR
     setLoading(true);
     try {
       // Get user by email first
-      const { data: userData, error: getUserError } = await supabase.auth.admin.listUsers();
+      const { data: userData, error: getUserError } = await supersupabase.auth.admin.listUsers();
       
       if (getUserError) {
         throw getUserError;
@@ -70,7 +70,7 @@ export const PasswordResetDialog = ({ open, onOpenChange, userEmail }: PasswordR
       }
 
       // Update user password
-      const { error } = await supabase.auth.admin.updateUserById(targetUser.id, {
+      const { error } = await supersupabase.auth.admin.updateUserById(targetUser.id, {
         password: data.newPassword,
       });
 

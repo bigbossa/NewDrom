@@ -1,13 +1,13 @@
-
 import { Button } from "@/components/ui/button";
 import { Download, Plus } from "lucide-react";
 import { useAuth } from "@/providers/AuthProvider";
 
 interface BillingHeaderProps {
   onOpenCalculationDialog: () => void;
+  exportToExcel: () => void;
 }
 
-export default function BillingHeader({ onOpenCalculationDialog }: BillingHeaderProps) {
+export default function BillingHeader({ onOpenCalculationDialog, exportToExcel }: BillingHeaderProps) {
 const { user } = useAuth();
 
   return (
@@ -21,6 +21,7 @@ const { user } = useAuth();
       <Button
         variant="outline"
         className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-muted"
+        onClick={exportToExcel}
       >
         <Download size={16} />
         <span>ส่งออก</span>

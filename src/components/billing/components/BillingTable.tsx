@@ -32,6 +32,8 @@ interface BillingRecord {
   due_date: string;
   paid_date: string | null;
   created_at: string;
+  receipt_number: string;
+  fullname: string | null;
   rooms: {
     room_number: string;
   };
@@ -93,9 +95,9 @@ export default function BillingTable({
       <CardContent>
         <div className="rounded-md border">
           <Table>
-            <TableHeader>
-              <TableRow>
+            <TableHeader>              <TableRow>
                 <TableHead>เดือน</TableHead>
+                <TableHead>เลขที่ใบเสร็จ</TableHead>
                 <TableHead>ผู้เช่า</TableHead>
                 <TableHead>ห้อง</TableHead>
                 <TableHead>ค่าห้อง</TableHead>
@@ -118,12 +120,15 @@ export default function BillingTable({
                   return false;
                 })
                 .map((billing) => (
-                  <TableRow key={billing.id}>
-                    <TableCell className="font-medium">
+                  <TableRow key={billing.id}>                   
+                   <TableCell className="font-medium">
                       {formatMonth(billing.billing_month)}
                     </TableCell>
+                    <TableCell className="font-medium">
+                      {billing.receipt_number || '-'}
+                    </TableCell>
                     <TableCell>
-                      {billing.tenants.first_name} {billing.tenants.last_name}
+                      {billing.fullname}
                     </TableCell>
                     <TableCell>{billing.rooms.room_number}</TableCell>
                     <TableCell>{formatCurrency(billing.room_rent)}</TableCell>

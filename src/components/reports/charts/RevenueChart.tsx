@@ -51,8 +51,7 @@ export const RevenueChart = () => {
         <CardHeader>
           <CardTitle>Revenue Analysis</CardTitle>
           <CardDescription>Monthly revenue data for the dormitory</CardDescription>
-        </CardHeader>
-        <CardContent className="h-[400px] flex items-center justify-center">
+        </CardHeader>        <CardContent className="h-[500px] flex items-center justify-center">
           <div className="text-muted-foreground">Loading...</div>
         </CardContent>
       </Card>
@@ -65,7 +64,7 @@ export const RevenueChart = () => {
         <CardTitle>Revenue Analysis</CardTitle>
         <CardDescription>Monthly revenue data for the dormitory</CardDescription>
       </CardHeader>
-      <CardContent className="h-[400px]">
+      <CardContent className="h-[500px]">
         <ChartContainer
           config={{
             revenue: {

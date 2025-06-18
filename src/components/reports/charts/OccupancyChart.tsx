@@ -1,4 +1,3 @@
-
 import { 
   Card, 
   CardContent, 
@@ -43,8 +42,8 @@ export const OccupancyChart = () => {
         <CardHeader>
           <CardTitle>Occupancy Trends</CardTitle>
           <CardDescription>Monthly occupancy rates for the dormitory</CardDescription>
-        </CardHeader>
-        <CardContent className="h-[400px] flex items-center justify-center">
+        </CardHeader>       
+         <CardContent className="h-[400px] flex items-center justify-center">
           <div className="text-muted-foreground">Loading...</div>
         </CardContent>
       </Card>
@@ -57,7 +56,7 @@ export const OccupancyChart = () => {
         <CardTitle>Occupancy Trends</CardTitle>
         <CardDescription>Monthly occupancy rates for the dormitory</CardDescription>
       </CardHeader>
-      <CardContent className="h-[400px]">
+      <CardContent className="h-[700px]">
         <ChartContainer
           config={{
             occupancy: {

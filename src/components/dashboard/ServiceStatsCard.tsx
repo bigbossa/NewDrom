@@ -1,4 +1,3 @@
-
 import { Wrench, Calendar, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,8 +7,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
+interface MonthlyData {
+  month: string;
+  revenue: number;
+}
+
 interface ServiceStatsCardProps {
-  monthlyRevenue: number;
+  monthlyData: MonthlyData[];
   pendingRepairs: number;
   announcements: number;
   formatCurrency: (value: number) => string;
@@ -17,24 +21,27 @@ interface ServiceStatsCardProps {
 }
 
 export function ServiceStatsCard({ 
-  monthlyRevenue, 
+  monthlyData,
   pendingRepairs, 
   announcements, 
   formatCurrency, 
   t 
 }: ServiceStatsCardProps) {
+  const currentMonthRevenue = monthlyData[monthlyData.length - 1]?.revenue || 0;
+  const currentMonth = monthlyData[monthlyData.length - 1]?.month || '';
+
   return (
     <>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-sm font-medium">
-            {t("dashboard.monthlyRevenue")}
+            {t("dashboard.monthlyRevenue")} ({currentMonth})
           </CardTitle>
           <DollarSign className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">
-            {formatCurrency(monthlyRevenue)}
+            {formatCurrency(currentMonthRevenue)}
           </div>
         </CardContent>
       </Card>
@@ -49,9 +56,6 @@ export function ServiceStatsCard({
         <CardContent>
           <div className="text-2xl font-bold">{pendingRepairs}</div>
           <div className="mt-2">
-            <Button size="sm" variant="outline">
-              {t("repairs.management")}
-            </Button>
           </div>
         </CardContent>
       </Card>
@@ -66,9 +70,6 @@ export function ServiceStatsCard({
         <CardContent>
           <div className="text-2xl font-bold">{announcements}</div>
           <div className="mt-2">
-            <Button size="sm" variant="outline">
-              {t("nav.announcements")}
-            </Button>
           </div>
         </CardContent>
       </Card>

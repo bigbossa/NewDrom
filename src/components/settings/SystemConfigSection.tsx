@@ -44,7 +44,7 @@ export function SystemConfigSection() {
       <h3 className="text-lg font-medium">การตั้งค่าระบบ</h3>
       <div className="grid gap-4 md:grid-cols-2">
         <div>
-          <Label htmlFor="water-rate">อัตราค่าน้ำ (บาท/หน่วย)</Label>
+          <Label htmlFor="water-rate">อัตราค่าน้ำ (คน/บาท)</Label>
           <Input 
             id="water-rate" 
             type="number" 

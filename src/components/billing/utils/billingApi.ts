@@ -1,5 +1,10 @@
-
 import { supabase } from "@/integrations/supabase/client";
+
+// Simple receipt number generator function
+const generateBasicReceiptNumber = () => {
+  const timestamp = new Date().getTime();
+  return `RCP${timestamp}`;
+};
 
 interface CreateRoomBillingParams {
   selectedRoomData: {
@@ -40,9 +45,25 @@ export const createRoomBillingRecord = async (params: CreateRoomBillingParams) =
   // Create one billing record for the room (using the first occupant as representative)
   const primaryOccupant = selectedRoomData.occupants[0];
   
+  // Get tenant details to create fullname
+  const { data: tenantData, error: tenantError } = await supabase
+    .from('tenants')
+    .select('first_name, last_name')
+    .eq('id', primaryOccupant.tenant_id)
+    .single();
+
+  if (tenantError) {
+    console.error('Error fetching tenant details:', tenantError);
+    throw new Error(tenantError.message);
+  }
+
+  const fullname = `${tenantData.first_name} ${tenantData.last_name}`;
+  
   // Convert billingMonth from YYYY-MM-DD format to proper date string for database
   // If billingMonth is in YYYY-MM format, convert to YYYY-MM-01
   const billingDate = billingMonth.length === 7 ? billingMonth + '-01' : billingMonth;
+  // Generate a basic receipt number
+  const receiptNumber = generateBasicReceiptNumber();
   
   const { error } = await supabase
     .from('billing')
@@ -58,7 +79,9 @@ export const createRoomBillingRecord = async (params: CreateRoomBillingParams) =
       electricity_cost: electricityCost,
       total_amount: totalAmount,
       due_date: dueDate,
-      status: 'pending'
+      status: 'pending',
+      receipt_number: receiptNumber,
+      fullname: fullname
     });
 
   if (error) {
