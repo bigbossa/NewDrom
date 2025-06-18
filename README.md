@@ -27,6 +27,14 @@
   <img alt="React Hook Form" src="https://img.shields.io/badge/-React%20Hook%20Form-EC5990?style=flat-square&logo=reacthookform&logoColor=white">
 </p>
 
+### ✨ Features
+
+- 🎨 ✳️ **Modular UI Components**: Reusable, accessible components built with Radix UI and Tailwind CSS for a consistent user experience.
+- 🧠 🔐 **Type-Safe Data Handling**: Strong TypeScript support ensures reliable data interactions and maintainability.
+- 🚀 ⚡ **Seamless Backend Integration**: Built-in support for Supabase services, including auth, database, and storage.
+- 📦 📁 **Scalable Architecture**: Organized schemas, hooks, and context providers facilitate growth and customization.
+- 🧑‍💻 🛠️ **Developer-Centric Workflows**: Hot-reload, linting, and TypeScript configurations streamline development.
+
 Main Project Ban Phuttachad Dormitory, Nakhon Pathom
 If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
 
